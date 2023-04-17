@@ -1,9 +1,8 @@
-from fastapi import FastAPI
-from app import models
-from app.database import engine
-from .routers import post, user, authentication
-from .routers import vote
-from .config import settings
+from fastapi import FastAPI, Request
+from starlette.staticfiles import StaticFiles
+
+from .routers import post, user, authentication, vote
+from fastapi.templating import Jinja2Templates
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -18,6 +17,10 @@ from fastapi.middleware.cors import CORSMiddleware
 # models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 origins = [
     "http://www.google.com",
@@ -37,3 +40,6 @@ app.include_router(authentication.router)
 app.include_router(vote.router)
 
 
+@app.get("/")
+def hello(request: Request):
+    return templates.TemplateResponse("home.html", {"request": request})
