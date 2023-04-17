@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form class="row g-3 needs-validation" action="/login" method="post" novalidate>
+    <div class="col-md-4">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" value="{{ email }}" name="email" required>
+        
+    </div>
+    <div class="col-md-4">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" value="{{ password }}" name="password" required>
+        
+    </div>
+    
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Login</button>
+    </div>
+</form>
+
+
+{% endblock %}
