@@ -36,7 +36,6 @@ async def login(request: Request, db: Session = Depends(get_db)):
         try:
             form.__dict__.update(msg="Login Successful :)")
             response = main.templates.TemplateResponse("login.html", form.__dict__)
-
             login_for_access_token(response=response, user_credentials=form, db=db)
 
             return response

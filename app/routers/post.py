@@ -1,10 +1,11 @@
 from fastapi import status, HTTPException, Depends, Response, APIRouter, Request
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List
 from app import models, schemas, oauth2
 from ..database import get_db
 from sqlalchemy import func
 from app import main
+from ..forms import CreatePost
 
 router = APIRouter(
     prefix="/posts",
@@ -22,8 +23,8 @@ def get_posts(request: Request):
                                                             # and API do everything what he needs to do with it.
                                                  # WE used status code to raise HTTP Response 201 - Created.
                                                  # This what is needed by documentation.
-def create_post(post: schemas.PostCreate, db: Session = Depends(get_db),
-                current_user: models.User = Depends(oauth2.get_current_user)):
+async def create_post(request: Request, db: Session = Depends(get_db),
+                      current_user: models.User = Depends(oauth2.get_current_user)):
 
     # cursor.execute("INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *",
                   # (post.title, post.content, post.published))      # CREATION of our post
@@ -31,16 +32,20 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db),
     # new_post = cursor.fetchone()    # RETURNING post's data
 
     # conn.commit()   # SAVE the changes to DATABASE (ADD NEW POST TO DATABASE)
+    form = await request.form()
+    title = form.get("title")
+    content = form.get("content")
 
-    new_post = models.Post(owner_id=current_user.id, **post.dict())
+    post = {"title": title, "content": content}
+    new_post = models.Post(owner_id=current_user.id, **post)
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
     return new_post
 
 
-@router.get("/{id}", response_model=schemas.PostOut)    # response_model - SCHEMA of RETURNING DATA
-def get_post(id: int, db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user)):
+@router.get("/{id}")    # response_model - SCHEMA of RETURNING DATA
+def get_post(request: Request, id: int, db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user)):
 
     # WE can get SINGLE post by id.
     # cursor.execute("SELECT * FROM posts WHERE %s = id", (id,))      # CHOOSE post by id
@@ -52,7 +57,7 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: models.User =
     if not post:    # CHECK if our post exists.
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} was not found.")
 
-    return post
+    return main.templates.TemplateResponse("post_detail", {"request": request, "post": post})
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)

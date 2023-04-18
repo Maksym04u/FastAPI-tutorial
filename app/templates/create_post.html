@@ -7,11 +7,11 @@
 <form class="text-center mx-5" action="/posts" method="post">
     <div class="mb-3">
         <label for="title" class="form-label">Email address</label>
-        <input type="text" class="form-control form-control-lg" id="title" placeholder="My Post">
+        <input type="text" class="form-control form-control-lg" id="title" placeholder="My Post" name="title" required>
     </div>
     <div class="mb-3">
         <label for="content" class="form-label">Textarea</label>
-        <textarea class="form-control" id="content" rows="3"></textarea>
+        <textarea class="form-control" id="content" rows="3" name="content" required></textarea>
     </div>
     <div>
         <button class="btn btn-primary" type="submit">Create</button>
