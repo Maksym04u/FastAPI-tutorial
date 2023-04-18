@@ -1,9 +1,10 @@
-from fastapi import status, HTTPException, Depends, Response, APIRouter
+from fastapi import status, HTTPException, Depends, Response, APIRouter, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app import models, schemas, oauth2
 from ..database import get_db
 from sqlalchemy import func
+from app import main
 
 router = APIRouter(
     prefix="/posts",
@@ -12,19 +13,8 @@ router = APIRouter(
 
 
 @router.get('/', response_model=List[schemas.PostOut])  # RETURN OUR POSTS   response-model - needs LIST of DICTIONARIES
-def get_posts(db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user),
-              limit: int = 5, skip: int = 0, search: Optional[str] = ""):
-
-    # cursor.execute("SELECT * FROM posts")       # Take ALL information about EVERY POST
-    # posts = cursor.fetchall()       # RETURN ALL objects from database.
-
-    # posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
-    posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote,
-                                                                         models.Post.id == models.Vote.post_id,
-                                                                         isouter=True).group_by(models.Post.id).filter(
-        models.Post.title.contains(search)).limit(limit).offset(skip).all()
-
-    return posts
+def get_posts(request: Request):
+    return main.templates.TemplateResponse("create_post.html", {"request": request})
 
 
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.Post)

@@ -1,10 +1,16 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
 from starlette.staticfiles import StaticFiles
 
 from .routers import post, user, authentication, vote
 from fastapi.templating import Jinja2Templates
 
 from fastapi.middleware.cors import CORSMiddleware
+from . import models, oauth2
+from .database import get_db
+from pydantic.types import Optional
 
 #      CRUD         WE should use PLURAL(-s) in the ways of methods. ( /posts ...)
 # C - create -> post -> /posts -> @app.post('/posts')
@@ -18,7 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="app/templates")
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
@@ -40,6 +46,28 @@ app.include_router(authentication.router)
 app.include_router(vote.router)
 
 
-@app.get("/")
-def hello(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request})
+@app.get('/')  # RETURN OUR POSTS   response-model - needs LIST of DICTIONARIES
+def get_posts(request: Request, db: Session = Depends(get_db),
+              current_user: models.User = Depends(oauth2.get_current_user),
+              limit: int = 5, skip: int = 0, search: Optional[str] = ""):
+
+    # cursor.execute("SELECT * FROM posts")       # Take ALL information about EVERY POST
+    # posts = cursor.fetchall()       # RETURN ALL objects from database.
+
+    # posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote,
+                                                                        models.Post.id == models.Vote.post_id,
+                                                                        isouter=True).group_by(models.Post.id).filter(
+        models.Post.title.contains(search)).limit(limit).offset(skip).all()
+
+    return templates.TemplateResponse("home.html", {"request": request, "posts": posts})
+
+
+@app.get("/login")
+def signin(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
+@app.get("/signup")
+def register(request: Request):
+    return templates.TemplateResponse("signup.html", {"request": request})

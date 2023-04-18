@@ -17,7 +17,7 @@ class LoginForm:
     async def is_valid(self):
         if not self.username or not (self.username.__contains__("@")):
             self.errors.append("Valid Email is mandatory")
-        if not self.password or not len(self.password) >= 6:
+        if not self.password or not len(self.password) >= 1:
             self.errors.append("Password needs to be > 6 chars")
 
         if not self.errors:

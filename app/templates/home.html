@@ -1,14 +1,37 @@
 {% extends "base.html" %}
 
 
-
-{% block title %}Home Page{% endblock %}
+{% block title %}
+<title>New Jobboard</title>
+{% endblock %}
 
 {% block content %}
+<div class="container">
+    <h1 class="display-4 text-danger text-center">Maybe you will be interested:</h1>
 
-<div class="gradient">
-    <h1 class="text-center my-5">Maybe you will be interested.</h1>
-    <img src="{{ url_for('static', path='/img/nft.jpg') }}" alt="Ukraine">
+    <div class="row justify-content-center">
+        {% for post in posts %}
+        <div class="col-lg-4 col-md-3 col-sm-10 mr-auto">
+            {% with obj=post %}
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title">{{obj.Post.title}}</h5>
+                    <p class="card-text">{{obj.Post.content}}</p>
+                    <a href="/detail/{{obj.id}}" class="btn btn-primary">Read More</a>
+                </div>
+            </div>
+            {% endwith %}
+
+            {% if loop.index %3 %}
+        </div>
+        {% else %}
+    </div>
+</div><br>
+<div class="row">
+    {% endif %}
+    {% endfor %}
 </div>
 
+
 {% endblock %}
+
