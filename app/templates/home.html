@@ -2,7 +2,7 @@
 
 
 {% block title %}
-<title>New Jobboard</title>
+<title>New Posts</title>
 {% endblock %}
 
 {% block content %}
@@ -17,7 +17,7 @@
                 <div class="card-body">
                     <h5 class="card-title">{{obj.Post.title}}</h5>
                     <p class="card-text">{{obj.Post.content}}</p>
-                    <a href="/posts/{{obj.id}}" class="btn btn-primary">Read More</a>
+                    <a href="/posts/{{obj.Post.id}}" class="btn btn-primary">Read More</a>
                 </div>
             </div>
             {% endwith %}

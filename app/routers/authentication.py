@@ -2,8 +2,9 @@ from fastapi import status, HTTPException, Depends, Response, APIRouter, Request
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from ..database import get_db
-from .. import schemas, models, utils, oauth2, main
+from .. import models, utils, oauth2, main
 from ..forms import LoginForm
+from fastapi.responses import RedirectResponse
 
 
 router = APIRouter(tags=["Authentication"])
@@ -35,7 +36,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
     if await form.is_valid():
         try:
             form.__dict__.update(msg="Login Successful :)")
-            response = main.templates.TemplateResponse("login.html", form.__dict__)
+            response = RedirectResponse('/', status_code=status.HTTP_303_SEE_OTHER)
             login_for_access_token(response=response, user_credentials=form, db=db)
 
             return response
@@ -43,4 +44,4 @@ async def login(request: Request, db: Session = Depends(get_db)):
             form.__dict__.update(msg="")
             form.__dict__.get("errors").append("Incorrect email or password")
             return main.templates.TemplateResponse("login.html", form.__dict__)
-    return main.templates.TemplateResponse("login.html", form.__dict__)
+    return RedirectResponse("/")

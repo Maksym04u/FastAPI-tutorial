@@ -24,25 +24,3 @@ class LoginForm:
             return True
         return False
 
-
-class CreatePost:
-    def __init__(self, request: Request):
-        self.request: Request = request
-        self.errors: List = []
-        self.title: str = ""
-        self.content: str = ""
-
-    async def load_data(self):
-        form = await self.request.form()
-        self.title = form.get("email")
-        self.content = form.get("password")
-
-    async def is_valid(self):
-        if not self.title:
-            self.errors.append("Your Post doesn't have title.")
-        if not self.content:
-            self.errors.append("Content is empty.")
-
-        if not self.errors:
-            return True
-        return False

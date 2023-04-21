@@ -5,12 +5,19 @@ from app import models, schemas, oauth2
 from ..database import get_db
 from sqlalchemy import func
 from app import main
-from ..forms import CreatePost
+
 
 router = APIRouter(
     prefix="/posts",
     tags=["Posts"]
 )
+
+
+@router.get('/myposts')
+def get_my_posts(request: Request, current_user: models.User = Depends(oauth2.get_current_user),
+                 db: Session = Depends(get_db)):
+    posts = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
+    return main.templates.TemplateResponse("profile.html", {"request": request, "posts": posts})
 
 
 @router.get('/', response_model=List[schemas.PostOut])  # RETURN OUR POSTS   response-model - needs LIST of DICTIONARIES
@@ -45,7 +52,8 @@ async def create_post(request: Request, db: Session = Depends(get_db),
 
 
 @router.get("/{id}")    # response_model - SCHEMA of RETURNING DATA
-def get_post(request: Request, id: int, db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user)):
+def get_post(request: Request, id: int, db: Session = Depends(get_db),
+             current_user: models.User = Depends(oauth2.get_current_user)):
 
     # WE can get SINGLE post by id.
     # cursor.execute("SELECT * FROM posts WHERE %s = id", (id,))      # CHOOSE post by id
@@ -57,7 +65,7 @@ def get_post(request: Request, id: int, db: Session = Depends(get_db), current_u
     if not post:    # CHECK if our post exists.
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} was not found.")
 
-    return main.templates.TemplateResponse("post_detail", {"request": request, "post": post})
+    return main.templates.TemplateResponse("post_detail.html", {"request": request, "post": post})
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)

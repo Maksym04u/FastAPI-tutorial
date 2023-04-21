@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %} Your Profile {% endblock %}
+
+{% block content %}
+<h1 class="text-center"> Your Posts </h1>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="card col-8 p-3 gradient">
+            {% for post in posts %}
+            <div class="col-12 card m-1">
+                <div class="card-body m-auto">
+                    <h5 class="card-title">{{post.title}}</h5>
+                    <p class="card-text">{{post.content}}</p>
+                    <a href="/posts/{{post.id}}" class="btn btn-primary">Read more</a>
+                    <form onsubmit="event.preventDefault(); deletePost({{ post.id }});">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function deletePost(id) {
+        if (confirm("Are you sure you want to delete this post?")) {
+            // Create a new XMLHttpRequest object
+  
+            // Define the request parameters
+            xhr.open('DELETE', '/posts/' + id, true);
+
+            // Set the request headers (if needed)
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            // Define the callback function for when the request completes
+            xhr.onload = function () {
+                if (xhr.status === 204) {
+                    // Reload the page to show the updated post list
+                    location.reload();
+                } else {
+                    alert('An error occurred while deleting the post.');
+                }
+            };
+
+            // Send the request
+            xhr.send();
+        }
+    }
+</script>
+{% endblock %}

@@ -48,7 +48,6 @@ app.include_router(vote.router)
 
 @app.get('/')  # RETURN OUR POSTS   response-model - needs LIST of DICTIONARIES
 def get_posts(request: Request, db: Session = Depends(get_db),
-              current_user: models.User = Depends(oauth2.get_current_user),
               limit: int = 5, skip: int = 0, search: Optional[str] = ""):
 
     # cursor.execute("SELECT * FROM posts")       # Take ALL information about EVERY POST
