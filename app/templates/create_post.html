@@ -4,14 +4,22 @@
 
 {% block content %}
 
-<form class="text-center mx-5" action="/posts" method="post">
+<form class="text-center mx-5" action="/posts" method="post" enctype="multipart/form-data">
     <div class="mb-3">
         <label for="title" class="form-label">Title</label>
         <input type="text" class="form-control form-control-lg" id="title" placeholder="My Post" name="title" required>
     </div>
     <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <input type="text" class="form-control form-control-lg" id="description" placeholder="A little bit about post" name="description" required>
+    </div>
+    <div class="mb-3">
         <label for="content" class="form-label">Textarea</label>
-        <textarea class="form-control" id="content" rows="3" name="content" required></textarea>
+        <textarea class="form-control" id="content" rows="" name="content" required></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="img" class="form-label">Image</label>
+        <input type="file" name="file" id="img" placeholder="Download image of post" required>
     </div>
     <div>
         <button class="btn btn-primary" type="submit">Create</button>

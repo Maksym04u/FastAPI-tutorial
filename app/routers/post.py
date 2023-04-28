@@ -1,4 +1,6 @@
-from fastapi import status, HTTPException, Depends, Response, APIRouter, Request
+from fastapi import status, HTTPException, Depends, Response, APIRouter, Request, File, UploadFile
+from fastapi.responses import RedirectResponse, StreamingResponse
+import io
 from sqlalchemy.orm import Session
 from typing import List
 from app import models, schemas, oauth2
@@ -31,7 +33,7 @@ def get_posts(request: Request):
                                                  # WE used status code to raise HTTP Response 201 - Created.
                                                  # This what is needed by documentation.
 async def create_post(request: Request, db: Session = Depends(get_db),
-                      current_user: models.User = Depends(oauth2.get_current_user)):
+                      current_user: models.User = Depends(oauth2.get_current_user), file: UploadFile = File(...)):
 
     # cursor.execute("INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *",
                   # (post.title, post.content, post.published))      # CREATION of our post
@@ -42,13 +44,15 @@ async def create_post(request: Request, db: Session = Depends(get_db),
     form = await request.form()
     title = form.get("title")
     content = form.get("content")
+    description = form.get("description")
+    image = await file.read()
 
-    post = {"title": title, "content": content}
+    post = {"title": title, "content": content, "description": description, "image": image}
     new_post = models.Post(owner_id=current_user.id, **post)
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
-    return new_post
+    return RedirectResponse(f"/posts/{new_post.id}", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/{id}")    # response_model - SCHEMA of RETURNING DATA
@@ -66,6 +70,15 @@ def get_post(request: Request, id: int, db: Session = Depends(get_db),
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} was not found.")
 
     return main.templates.TemplateResponse("post_detail.html", {"request": request, "post": post})
+
+
+@router.get("/{id}/image")
+def get_post_image(id: int, db: Session = Depends(get_db)):
+    post = db.query(models.Post).filter(models.Post.id == id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    return StreamingResponse(io.BytesIO(post.image), media_type="image/png")
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)

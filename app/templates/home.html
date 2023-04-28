@@ -14,9 +14,10 @@
         <div class="col-lg-4 col-md-3 col-sm-10 mr-auto">
             {% with obj=post %}
             <div class="card" style="width: 18rem;">
+                <img src="/posts/{{ obj.Post.id }}/image" class="card-img-top" />
                 <div class="card-body">
-                    <h5 class="card-title">{{obj.Post.title}}</h5>
-                    <p class="card-text">{{obj.Post.content}}</p>
+                    <h5 class="card-title">{{ obj.Post.title }}</h5>
+                    <p class="card-text">{{ obj.Post.description }}</p>
                     <a href="/posts/{{obj.Post.id}}" class="btn btn-primary">Read More</a>
                 </div>
             </div>

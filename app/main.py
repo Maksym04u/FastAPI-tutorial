@@ -45,6 +45,11 @@ app.include_router(user.router)
 app.include_router(authentication.router)
 app.include_router(vote.router)
 
+# Добавити короткий опис посту
+# Добавити можливість фото як фото посту
+# Добавити дізлайк
+# Добавити різницю лайків і дізлайків
+
 
 @app.get('/')  # RETURN OUR POSTS   response-model - needs LIST of DICTIONARIES
 def get_posts(request: Request, db: Session = Depends(get_db),

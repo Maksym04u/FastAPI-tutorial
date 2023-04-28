@@ -9,24 +9,11 @@
 <div class="container">
     <div class="row">
         <div class="col">
-            <h1 class="display-5">Job Detail</h1>
+            <h1 class="display-5 text-center">{{ post.Post.title }}</h1>
         </div>
     </div>
 
-    <div class="row">
-        <table class="table table-striped table-hover">
-            <tbody>
-            <tr>
-                <th scope="row">Job Title</th>
-                <td colspan="2">{{post.Post.title}}</td>
-            </tr>
-            <tr>
-                <th scope="row">Company</th>
-                <td colspan="2">{{post.Post.content}}</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+    <p>{{ post.Post.content }}</p>
     <form action="/vote" method="post" class="text-end">
         <input type="hidden" name="post_id" value="{{ post.Post.id }}">
         <button type="submit">LIKE</button>
