@@ -12,14 +12,39 @@
             <h1 class="display-5 text-center">{{ post.Post.title }}</h1>
         </div>
     </div>
-
-    <p>{{ post.Post.content }}</p>
-    <form action="/vote" method="post" class="text-end">
-        <input type="hidden" name="post_id" value="{{ post.Post.id }}">
-        <button type="submit">LIKE</button>
-    </form>
+    <p class="text-center">{{ post.Post.description }}</p>
+    <p>{{ post.Post.content | safe }}</p>
+    <div class="d-flex justify-content-end">
+        <form action="/vote" method="post" class="text-end d-inline">
+            <input type="hidden" name="post_id" value="{{ post.Post.id }}">
+            <input type="hidden" name="direction" value="1">
+            <button type="submit">LIKE</button>
+        </form>
+        <p class="d-inline mx-2" id="vote-difference">Loading...</p>
+        <form action="/vote" method="post" class="text-end d-inline">
+            <input type="hidden" name="post_id" value="{{ post.Post.id }}">
+            <input type="hidden" name="direction" value="-1">
+            <button type="submit">DISLIKE</button>
+        </form>
+    </div>
 </div>
-<script>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $.ajax({
+            url: "/vote/{{ post.Post.id }}",
+            success: function(data) {
+                var difference = data.difference;
+                var sign = difference >= 0 ? "+" : "-";
+                var color = difference > 0 ? "green" : (difference < 0 ? "red" : "black");
+                $("#vote-difference").text(sign + Math.abs(difference)).css("color", color);
+            },
+            error: function() {
+                $("#vote-difference").text("Failed to load vote difference").css("color", "black");
+            }
+        });
+    });
 </script>
+
 {% endblock %}

@@ -1,3 +1,5 @@
+import json
+
 from fastapi import status, HTTPException, Depends, Response, APIRouter, Request, File, UploadFile
 from fastapi.responses import RedirectResponse, StreamingResponse
 import io
@@ -7,6 +9,7 @@ from app import models, schemas, oauth2
 from ..database import get_db
 from sqlalchemy import func
 from app import main
+
 
 
 router = APIRouter(
@@ -43,11 +46,12 @@ async def create_post(request: Request, db: Session = Depends(get_db),
     # conn.commit()   # SAVE the changes to DATABASE (ADD NEW POST TO DATABASE)
     form = await request.form()
     title = form.get("title")
-    content = form.get("content")
+    content = form.get("quill-html")
     description = form.get("description")
     image = await file.read()
 
     post = {"title": title, "content": content, "description": description, "image": image}
+
     new_post = models.Post(owner_id=current_user.id, **post)
     db.add(new_post)
     db.commit()
