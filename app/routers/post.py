@@ -1,4 +1,3 @@
-import json
 
 from fastapi import status, HTTPException, Depends, Response, APIRouter, Request, File, UploadFile
 from fastapi.responses import RedirectResponse, StreamingResponse
@@ -9,7 +8,6 @@ from app import models, schemas, oauth2
 from ..database import get_db
 from sqlalchemy import func
 from app import main
-
 
 
 router = APIRouter(
@@ -49,8 +47,9 @@ async def create_post(request: Request, db: Session = Depends(get_db),
     content = form.get("quill-html")
     description = form.get("description")
     image = await file.read()
+    themes = form.getlist("themes")
 
-    post = {"title": title, "content": content, "description": description, "image": image}
+    post = {"title": title, "content": content, "description": description, "image": image, "themes": themes}
 
     new_post = models.Post(owner_id=current_user.id, **post)
     db.add(new_post)
@@ -129,3 +128,10 @@ def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)
 
     db.commit()
     return post_query.first()
+
+
+@router.get("/filters")
+async def get_posts_by_filters(request: Request, db: Session = Depends(get_db)):
+    form = await request.form()
+    print(form)
+    return form

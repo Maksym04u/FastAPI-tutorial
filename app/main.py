@@ -51,9 +51,10 @@ app.include_router(vote.router)
 # Добавити різницю лайків і дізлайків                   DONE
 # Добавити коменти
 # Апргрейнути шаблони
-# Добавити фільтри
-# Добавити можливість Search
-# Добавити можливість редагування тексту і зображення в тексті і відтворення його з бази даних
+# Добавити фільтри ( добавити можливість сортування за датою та за темою (можливо і то і інше))        DONE
+# Добавити можливість Search                            DONE
+# Пагінація
+# Добавити можливість редагування тексту і зображення в тексті і відтворення його з бази даних          DONE
 
 
 @app.get('/')  # RETURN OUR POSTS   response-model - needs LIST of DICTIONARIES
@@ -64,10 +65,11 @@ def get_posts(request: Request, db: Session = Depends(get_db),
     # posts = cursor.fetchall()       # RETURN ALL objects from database.
 
     # posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    themes = request.query_params.getlist("themes")
     posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote,
                                                                         models.Post.id == models.Vote.post_id,
                                                                         isouter=True).group_by(models.Post.id).filter(
-        models.Post.title.contains(search)).limit(limit).offset(skip).all()
+        models.Post.title.contains(search), models.Post.themes.contains(list(themes))).limit(limit).offset(skip).all()
 
     return templates.TemplateResponse("home.html", {"request": request, "posts": posts})
 

@@ -25,7 +25,31 @@
         <label for="img" class="form-label">Image</label>
         <input type="file" name="file" id="img" placeholder="Download image of post" required>
     </div>
+
     <input type="hidden" name="quill-html" id="quill-html">
+
+    <div class="form-group">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="Sport" id="sport" name="themes">
+            <label class="form-check-label" for="sport"> Sport </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="Art" id="art" name="themes">
+            <label class="form-check-label" for="art"> Art </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="Politics" id="politics" name="themes">
+            <label class="form-check-label" for="politics"> Politics </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="Science" id="science" name="themes">
+            <label class="form-check-label" for="science"> Science </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="Art" id="Others" name="themes">
+            <label class="form-check-label" for="art"> Others </label>
+        </div>
+    </div>
     <div>
         <button class="btn btn-primary" type="submit">Create</button>
     </div>
@@ -75,6 +99,8 @@ function setQuillHtml() {
     var html = quill.root.innerHTML;
     document.getElementById('quill-html').value = html;
 }
+
+
 
 
 </script>
