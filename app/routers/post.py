@@ -72,7 +72,9 @@ def get_post(request: Request, id: int, db: Session = Depends(get_db),
     if not post:    # CHECK if our post exists.
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} was not found.")
 
-    return main.templates.TemplateResponse("post_detail.html", {"request": request, "post": post})
+    comments = db.query(models.Comment).filter(id == models.Comment.post_id).all()
+    return main.templates.TemplateResponse("post_detail.html", {"request": request, "post": post, "comments": comments,
+                                                                "user": current_user})
 
 
 @router.get("/{id}/image")
@@ -130,8 +132,19 @@ def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)
     return post_query.first()
 
 
-@router.get("/filters")
-async def get_posts_by_filters(request: Request, db: Session = Depends(get_db)):
-    form = await request.form()
-    print(form)
-    return form
+@router.get("/{id}/comments")
+async def get_comments_of_post(id: int, db: Session = Depends(get_db)):
+    post_comments = db.query(models.Comment).filter(id == models.Comment.post_id)
+
+    return post_comments
+
+
+@router.post("/{id}/comments")
+async def create_comment(id: int, payload: dict, db: Session = Depends(get_db),
+                         user: models.User = Depends(oauth2.get_current_user)):
+
+    comment = models.Comment(post_id=id, user_id=user.id, comment=payload['text'])
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+    return comment

@@ -34,6 +34,21 @@
     {% endif %}
     {% endfor %}
 </div>
+
+<div class="inline">
+    {% for page in range(pages) %}
+    <form class="text-center mx-5 inline" action="" method="get">
+        <input type="hidden" value="{{ page + 1 }}" name="page">
+        {% for theme in themes %}
+            <input type="hidden" value="{{ theme }}" name="themes">
+        {% endfor %}
+        <input type="hidden" value="{{ search }}" name="search">
+
+        <button type="submit">{{ page + 1 }}</button>
+    </form>
+    {% endfor %}
+</div>
+
 <p class="text-center"> Filters </p>
 <form class="text-center mx-5" action="" method="get">
     <div class="form-group">

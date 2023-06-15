@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container mt-4">
     <div class="row">
         <div class="col">
             <h1 class="display-5 text-center">{{ post.Post.title }}</h1>
@@ -27,7 +27,27 @@
             <button type="submit">DISLIKE</button>
         </form>
     </div>
+    <div class="mt-4">
+        <h4>Comments</h4>
+        <div class="mb-3">
+            <label for="commentInput" class="form-label">Leave a comment</label>
+            <textarea class="form-control" id="commentInput" rows="3"></textarea>
+        </div>
+        <button class="btn btn-primary" id="submitComment">Submit</button>
+
+        <!-- Comment list -->
+        <ul class="list-group mt-3" id="commentList">
+            <!-- Comment items will be dynamically added here -->
+        </ul>
+    </div>
+    <div>
+        {% for comment in comments %}
+        <p data-user-id="{{ comment.user_id }}">{{ comment.user_email }}</p>
+        <p> {{ comment.comment }} </p>
+        {% endfor %}
+    </div>
 </div>
+
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -45,6 +65,91 @@
             }
         });
     });
+
+$(document).ready(function() {
+  // Handle comment submission
+  $("#submitComment").click(function() {
+    var comment = $("#commentInput").val();
+    if (comment) {
+      var payload = {
+        text: comment
+      };
+
+      // Perform the AJAX request to create a new comment
+      $.ajax({
+        type: "POST",
+        url: "{{ post.Post.id }}/comments", // Replace {id} with the actual post ID
+        contentType: "application/json",
+        data: JSON.stringify(payload),
+        success: function(response) {
+          // Upon success, append the new comment to the comment list
+          var newCommentId = response.id;
+
+          // Fetch the user information for the new comment
+          $.ajax({
+            type: "GET",
+            url: "/users/{{ user.id }}", // Replace "/comments" with the actual endpoint for fetching user information
+            success: function(userResponse) {
+              // Extract the user email from the user response
+              var userEmail = userResponse.email;
+
+              // Create a new comment element with the user email
+              var commentElement = $("<li class='list-group-item'></li>").text(comment);
+              commentElement.prepend($("<p></p>").text(userEmail)); // Prepend the user email to the comment
+
+              // Append the new comment to the comment list
+              $("#commentList").append(commentElement);
+
+              // Clear the comment input field
+              $("#commentInput").val("");
+            },
+            error: function(error) {
+              console.error("Error:", error);
+            }
+          });
+        },
+        error: function(error) {
+          console.error("Error:", error);
+        }
+      });
+    }
+  });
+});
+
+
+$(document).ready(function() {
+    // Function to retrieve user email by user ID
+    function fetchUserEmail(userId) {
+        return $.ajax({
+            url: "/users/" + userId, // Replace with the actual endpoint to fetch user by ID
+            method: "GET",
+            dataType: "json"
+        });
+    }
+
+    // Function to update the user email for each comment
+    function updateUserEmails() {
+        var commentElements = $("p[data-user-id]");
+        commentElements.each(function() {
+            var commentElement = $(this);
+            var userId = commentElement.data("user-id");
+
+            // Fetch the user email asynchronously
+            fetchUserEmail(userId)
+                .done(function(response) {
+                    // Update the user email in the comment element
+                    commentElement.text(response.email);
+                })
+                .fail(function(error) {
+                    console.error("Error fetching user:", error);
+                });
+        });
+    }
+
+    // Call the function to update user emails on page load
+    updateUserEmails();
+});
+
 </script>
 
 {% endblock %}

@@ -1,3 +1,5 @@
+from math import ceil
+
 from fastapi import FastAPI, Request, Depends
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -11,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from . import models, oauth2
 from .database import get_db
 from pydantic.types import Optional
+
 
 #      CRUD         WE should use PLURAL(-s) in the ways of methods. ( /posts ...)
 # C - create -> post -> /posts -> @app.post('/posts')
@@ -53,25 +56,35 @@ app.include_router(vote.router)
 # Апргрейнути шаблони
 # Добавити фільтри ( добавити можливість сортування за датою та за темою (можливо і то і інше))        DONE
 # Добавити можливість Search                            DONE
-# Пагінація
+# Пагінація                                             DONE
 # Добавити можливість редагування тексту і зображення в тексті і відтворення його з бази даних          DONE
 
 
 @app.get('/')  # RETURN OUR POSTS   response-model - needs LIST of DICTIONARIES
-def get_posts(request: Request, db: Session = Depends(get_db),
-              limit: int = 5, skip: int = 0, search: Optional[str] = ""):
+def get_posts(request: Request, db: Session = Depends(get_db), page: int = 1,
+              limit: int = 3, search: Optional[str] = ""):
 
     # cursor.execute("SELECT * FROM posts")       # Take ALL information about EVERY POST
     # posts = cursor.fetchall()       # RETURN ALL objects from database.
 
     # posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+
+    offset = (page - 1) * limit
+
     themes = request.query_params.getlist("themes")
-    posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote,
+    posts_query = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote,
                                                                         models.Post.id == models.Vote.post_id,
                                                                         isouter=True).group_by(models.Post.id).filter(
-        models.Post.title.contains(search), models.Post.themes.contains(list(themes))).limit(limit).offset(skip).all()
+        models.Post.title.contains(search), models.Post.themes.contains(list(themes))).limit(limit).offset(offset)
 
-    return templates.TemplateResponse("home.html", {"request": request, "posts": posts})
+    posts = posts_query.all()
+    total_posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote,
+                                                                        models.Post.id == models.Vote.post_id,
+                                                                        isouter=True).group_by(models.Post.id).filter(
+        models.Post.title.contains(search), models.Post.themes.contains(list(themes))).count()
+    pages = ceil(total_posts / limit)
+    return templates.TemplateResponse("home.html", {"request": request, "posts": posts, "page": page, "limit": limit,
+                                                    "pages": pages, "themes": themes, "search": search})
 
 
 @app.get("/login")
